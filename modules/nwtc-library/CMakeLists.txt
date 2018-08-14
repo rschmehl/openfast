@@ -40,9 +40,12 @@ set(NWTCLIBS_SOURCES
   )
 
 get_filename_component(FCNAME ${CMAKE_Fortran_COMPILER} NAME)
-
-if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
-  if (WIN32)
+if(BUILD_OPENFAST_SIMULINK_API)
+  set(NWTC_SYS_FILE src/SysMatlab_Unix.f90)
+elseif (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
+  if (APPLE OR UNIX)
+    set(NWTC_SYS_FILE src/SysGnuLinux.f90)
+  elseif (WIN32)
     set(NWTC_SYS_FILE src/SysGnuWin.f90)
   elseif (APPLE OR UNIX OR CYGWIN)
     set(NWTC_SYS_FILE src/SysGnuLinux.f90)
