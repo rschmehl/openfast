@@ -34,6 +34,7 @@ if (NOT CMAKE_BUILD_TYPE)
     "Choose the build type: Debug Release" FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
+option(USE_OPENMP "Enable multithreading with OpenMP" off)
 option(BUILD_SHARED_LIBS "Enable building shared libraries" off)
 option(DOUBLE_PRECISION "Treat REAL as double precision" on)
 option(USE_DLL_INTERFACE "Enable runtime loading of dynamic libraries" on)
@@ -64,6 +65,13 @@ if (MKL_FOUND)
 else()
   find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)
+endif()
+
+if (USE_OPENMP)
+  find_package(OpenMP)
+  if(OpenMP_Fortran_FOUND)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+  endif()
 endif()
 
 ########################################################################
