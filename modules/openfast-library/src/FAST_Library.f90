@@ -93,7 +93,10 @@ subroutine FAST_Sizes(iTurb, TMax, InitInpAry, InputFileName_c, AbortErrLev_c, N
    ExternInitData%NumCtrl2SC = 0
    ExternInitData%NumSC2Ctrl = 0
    ExternInitData%SensorType = NINT(InitInpAry(1))   
-   
+   ! -- MATLAB Integration --
+   ! Make sure fast farm integration is false
+   ExternInitData%FarmIntegration = .false.
+
    IF ( NINT(InitInpAry(2)) == 1 ) THEN
       ExternInitData%LidRadialVel = .true.
    ELSE
