@@ -46,6 +46,9 @@ target_link_libraries(openfast_prelib
 add_library(openfast_postlib
   src/FAST_Lin.f90
   src/FAST_Mods.f90
+  src/FAST_Init.f90
+  src/FAST_IO.f90
+  src/FAST_VTK.f90
   src/FAST_Subs.f90
   src/FAST_Solver.f90
   )

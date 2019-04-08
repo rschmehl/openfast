@@ -33,7 +33,8 @@ PROGRAM FAST
 
 
 USE FAST_Subs   ! all of the ModuleName and ModuleName_types modules are inherited from FAST_Subs
-                       
+USE FAST_Initialization
+
 IMPLICIT  NONE
    
    ! Local parameters:
