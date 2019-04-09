@@ -21,8 +21,7 @@
 !**********************************************************************************************************************************
 MODULE FAST_ModTypes
 
-   USE NWTC_Library
-   USE FAST_Types
+   USE NWTC_Library, ONLY: IntKi, progdesc, SiKi
 
    TYPE(ProgDesc), PARAMETER :: FAST_Ver    = &
                                 ProgDesc( 'OpenFAST', '', '' ) !< The version number of this module
@@ -65,7 +64,4 @@ MODULE FAST_ModTypes
 
    LOGICAL,        PARAMETER :: BD_Solve_Option1 = .TRUE.
 
-
 END MODULE FAST_ModTypes
-!=======================================================================
-

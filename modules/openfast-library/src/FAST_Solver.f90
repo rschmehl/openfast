@@ -26,7 +26,23 @@ MODULE FAST_Solver
    USE NWTC_LAPACK
 
    USE FAST_ModTypes
-      
+
+   use FAST_Types, ONLY: FAST_OutputFileType, FAST_ModuleMapType, FAST_ParameterType, FAST_MiscVarType
+   USE FAST_Types, ONLY: HydroDyn_InputType, MAP_InputType, BD_InputType, SD_InputType, ED_InputType, AD_InputType, SrvD_InputType, InflowWind_InputType, AD14_InputType, ExtPtfm_InputType, FEAM_InputType, MD_InputType
+   USE FAST_Types, ONLY: Orca_InputType, IceFloe_InputType, IceD_InputType
+   USE FAST_Types, ONLY: AD_OutputType, AD14_OutputType, SrvD_OutputType, BD_OutputType, IceD_OutputType, ED_OutputType, SD_OutputType, OpFM_OutputType, InflowWind_OutputType
+   USE FAST_Types, ONLY: HydroDyn_OutputType, MAP_OutputType, FEAM_OutputType, MD_OutputType, ExtPtfm_OutputType
+   USE FAST_Types, ONLY: Orca_OutputType, IceFloe_OutputType
+   USE FAST_Types, ONLY: ED_ContinuousStateType, ED_DiscreteStateType, ED_OtherStateType, ED_ParameterType, ED_MiscVarType, ED_ConstraintStateType
+   USE FAST_Types, ONLY: BD_ContinuousStateType, BD_DiscreteStateType, BD_OtherStateType, BD_ParameterType, BD_MiscVarType, BD_ConstraintStateType
+   USE FAST_Types, ONLY: SD_ContinuousStateType, SD_DiscreteStateType, SD_OtherStateType, SD_ParameterType, SD_MiscVarType, SD_ConstraintStateType
+   USE FAST_Types, ONLY: ExtPtfm_ContinuousStateType, ExtPtfm_DiscreteStateType, ExtPtfm_OtherStateType, ExtPtfm_ParameterType, ExtPtfm_MiscVarType, ExtPtfm_ConstraintStateType
+   USE FAST_Types, ONLY: Orca_ContinuousStateType, Orca_DiscreteStateType, Orca_OtherStateType, Orca_ParameterType, Orca_MiscVarType, Orca_ConstraintStateType
+   USE FAST_Types, ONLY: HydroDyn_ContinuousStateType, HydroDyn_DiscreteStateType, HydroDyn_OtherStateType, HydroDyn_ParameterType, HydroDyn_MiscVarType, HydroDyn_ConstraintStateType
+   use FAST_Types, ONLY: AD14_ParameterType, InflowWind_ParameterType
+   USE FAST_Types, ONLY: Module_None, Module_IfW, Module_MAP, Module_IceF, Module_OpFM, Module_SD, Module_MD, Module_Orca, Module_IceD, Module_SrvD, Module_ED, Module_AD14, Module_FEAM, Module_ExtPtfm, Module_HD, Module_AD, Module_BD
+   USE FAST_Types, ONLY: ElastoDyn_Data, BeamDyn_Data, ServoDyn_Data, AeroDyn14_Data, AeroDyn_Data, InflowWind_Data, OpenFOAM_Data, HydroDyn_Data, SubDyn_Data, ExtPtfm_Data, MAP_Data, FEAMooring_Data, MoorDyn_Data, OrcaFlex_Data, IceFloe_Data, IceDyn_Data
+
    USE AeroDyn
    USE AeroDyn14
    USE InflowWind
@@ -45,6 +61,22 @@ MODULE FAST_Solver
    USE SuperController
    Use ExtPtfm_MCKF
    
+   USE ElastoDyn_Types
+   USE BeamDyn_Types
+   USE ServoDyn_Types
+   USE AeroDyn14_Types
+   USE AeroDyn_Types
+   use inflowwind_types
+   USE HydroDyn_Types
+   USE SubDyn_Types
+   USE ExtPtfm_MCKF_Types
+   USE MAP_Types
+   USE MoorDyn_Types
+   USE FEAMooring_Types
+   USE OrcaFlexInterface_Types
+   USE IceFloe_Types
+   USE IceDyn_Types
+   use OpenFOAM_Types
 
    IMPLICIT NONE
 

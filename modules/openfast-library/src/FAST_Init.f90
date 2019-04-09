@@ -20,10 +20,11 @@
 ! limitations under the License.
 !**********************************************************************************************************************************
 MODULE FAST_Initialization
-
+   
+   use FAST_Describe
    USE FAST_ModTypes
    USE FAST_IO
-   USE FAST_Linear
+   USE FAST_Linear, ONLY: Init_Lin
    USE FAST_Solver,       ONLY: initmodulemappings
    USE AeroDyn,           ONLY: AD_Init
    USE AeroDyn14,         ONLY: AD14_Init
@@ -42,7 +43,36 @@ MODULE FAST_Initialization
    USE OpenFOAM,          ONLY: Init_OpFM
    USE SuperController,   ONLY: Init_SC
    Use ExtPtfm_MCKF,      ONLY: ExtPtfm_Init
-     
+
+   USE BeamDyn_Types, ONLY: BD_STATIC_ANALYSIS, BD_MESH_QP
+   use OpenFOAM_Types
+   USE FAST_Types, ONLY: FAST_OutputFileType, FAST_ModuleMapType, FAST_ParameterType, FAST_MiscVarType
+   USE FAST_Types, ONLY: FAST_TurbineType, FAST_ExternInitType
+   USE FAST_Types, ONLY: NumModules, sensortype_none, IceD_MaxLegs
+   USE FAST_Types, ONLY: Module_None, Module_IfW, Module_MAP, Module_IceF, Module_OpFM, Module_SD, Module_MD, Module_Orca
+   USE FAST_Types, ONLY: Module_IceD, Module_SrvD, Module_ED, Module_AD14, Module_FEAM, Module_ExtPtfm, Module_HD
+   USE FAST_Types, ONLY: Module_AD, Module_BD
+   USE FAST_Types, ONLY: ElastoDyn_Data, BeamDyn_Data, ServoDyn_Data, AeroDyn14_Data, AeroDyn_Data, InflowWind_Data, OpenFOAM_Data
+   USE FAST_Types, ONLY: SuperController_Data, HydroDyn_Data, SubDyn_Data, ExtPtfm_Data, MAP_Data, FEAMooring_Data, MoorDyn_Data
+   USE FAST_Types, ONLY: OrcaFlex_Data, IceFloe_Data, IceDyn_Data
+   USE FAST_Types, ONLY: ED_InitInputType , ED_InitOutputType
+   USE FAST_Types, ONLY: BD_InitInputType , BD_InitOutputType
+   USE FAST_Types, ONLY: SrvD_InitInputType , SrvD_InitOutputType
+   USE FAST_Types, ONLY: AD14_InitInputType , AD14_InitOutputType
+   USE FAST_Types, ONLY: AD_InitInputType , AD_InitOutputType
+   USE FAST_Types, ONLY: InflowWind_InitInputType, InflowWind_InitOutputType
+   USE FAST_Types, ONLY: OpFM_InitInputType, OpFM_InitOutputType
+   USE FAST_Types, ONLY: SC_InitInputType, SC_InitOutputType
+   USE FAST_Types, ONLY: HydroDyn_InitInputType, HydroDyn_InitOutputType
+   USE FAST_Types, ONLY: SD_InitInputType, SD_InitOutputType
+   USE FAST_Types, ONLY: ExtPtfm_InitInputType, ExtPtfm_InitOutputType
+   USE FAST_Types, ONLY: MAP_InitInputType, MAP_InitOutputType
+   USE FAST_Types, ONLY: FEAM_InitInputType, FEAM_InitOutputType
+   USE FAST_Types, ONLY: MD_InitInputType, MD_InitOutputType
+   USE FAST_Types, ONLY: Orca_InitInputType, Orca_InitOutputType
+   USE FAST_Types, ONLY: IceFloe_InitInputType, IceFloe_InitOutputType
+   USE FAST_Types, ONLY: IceD_InitInputType, IceD_InitOutputType
+
    IMPLICIT NONE
 
 CONTAINS
@@ -1856,48 +1886,6 @@ RETURN
 END SUBROUTINE FAST_InitOutput
 
 !----------------------------------------------------------------------------------------------------------------------------------
-!> This function returns a string describing the glue code and some of the compilation options we're using.
-FUNCTION GetVersion(ThisProgVer)
-
-   ! Passed Variables:
-
-   TYPE(ProgDesc), INTENT( IN    ) :: ThisProgVer     !< program name/date/version description
-   CHARACTER(1024)                 :: GetVersion      !< String containing a description of the compiled precision.
-   
-   CHARACTER(200)                  :: git_commit
-   
-   GetVersion = TRIM(GetNVD(ThisProgVer))//', compiled'
-
-   IF ( Cmpl4SFun )  THEN     ! FAST has been compiled as an S-Function for Simulink
-      GetVersion = TRIM(GetVersion)//' as a DLL S-Function for Simulink'
-   ELSEIF ( Cmpl4LV )  THEN     ! FAST has been compiled as a DLL for Labview
-      GetVersion = TRIM(GetVersion)//' as a DLL for LabVIEW'
-   ENDIF   
-   
-   GetVersion = TRIM(GetVersion)//' as a '//TRIM(Num2LStr(BITS_IN_ADDR))//'-bit application using'
-   
-   ! determine precision
-
-      IF ( ReKi == SiKi )  THEN     ! Single precision
-         GetVersion = TRIM(GetVersion)//' single'
-      ELSEIF ( ReKi == R8Ki )  THEN ! Double precision
-         GetVersion = TRIM(GetVersion)// ' double'
-      ELSE                          ! Unknown precision
-         GetVersion = TRIM(GetVersion)//' unknown'
-      ENDIF
-      
-
-!   GetVersion = TRIM(GetVersion)//' precision with '//OS_Desc
-   GetVersion = TRIM(GetVersion)//' precision'
-
-   ! add git info
-   git_commit = QueryGitVersion()
-   GetVersion = TRIM(GetVersion)//' at commit '//git_commit
-
-   RETURN
-END FUNCTION GetVersion
-
-!----------------------------------------------------------------------------------------------------------------------------------
 !> This subroutine sets up the information needed to initialize AeroDyn, then initializes AeroDyn
 SUBROUTINE AD_SetInitInput(InitInData_AD14, InitOutData_ED, y_ED, p_FAST, ErrStat, ErrMsg)
 
@@ -2068,29 +2056,5 @@ SUBROUTINE SetModuleSubstepTime(ModuleID, p_FAST, y_FAST, ErrStat, ErrMsg)
       
 END SUBROUTINE SetModuleSubstepTime
 
-!----------------------------------------------------------------------------------------------------------------------------------
-!> This subroutine parses and compiles the relevant version and compile data for a givne program
-subroutine GetProgramMetadata(ThisProgVer, name, version, git_commit, architecture, precision)
-
-   TYPE(ProgDesc), INTENT(IN ) :: ThisProgVer     !< program name/date/version description
-   character(200), intent(out) :: name, version
-   character(200), intent(out) :: git_commit, architecture, precision
-   
-   name = trim(ThisProgVer%Name)
-   version = trim(ThisProgVer%Ver)
-   
-   git_commit = QueryGitVersion()
-
-   architecture = TRIM(Num2LStr(BITS_IN_ADDR))//' bit'
-   
-   if (ReKi == SiKi) then
-     precision = 'single'
-   else if (ReKi == R8Ki) then
-     precision = 'double'
-   else
-     precision = 'unknown'
-   end if
-   
-end subroutine GetProgramMetadata
 
 END MODULE

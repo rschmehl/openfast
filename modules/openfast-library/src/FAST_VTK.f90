@@ -22,6 +22,18 @@
 MODULE FAST_VTK
 
    USE FAST_ModTypes
+   USE BeamDyn_Types
+   USE ElastoDyn_Types
+   USE BeamDyn_Types
+   USE TMD_Types
+   USE ServoDyn_Types
+   USE AeroDyn_Types
+   USE HydroDyn_Types
+
+   USE FAST_Types, ONLY: FAST_VTK_BLSurfaceType
+   USE FAST_Types, ONLY: ElastoDyn_Data, BeamDyn_Data, ServoDyn_Data, AeroDyn14_Data, AeroDyn_Data, InflowWind_Data, OpenFOAM_Data, HydroDyn_Data, SubDyn_Data, MAP_Data, FEAMooring_Data, MoorDyn_Data, OrcaFlex_Data, IceFloe_Data, IceDyn_Data,ExtPtfm_Data
+   USE FAST_Types, ONLY: FAST_ParameterType, FAST_OutputFileType, FAST_ModuleMapType, FAST_OutputFileType
+   USE FAST_Types, ONLY: Module_None, Module_AD, Module_BD, Module_HD, Module_MAP, Module_IceF, Module_SD, Module_FEAM, Module_MD, Module_Orca, Module_IceD, Module_ExtPtfm
 
 IMPLICIT NONE
 

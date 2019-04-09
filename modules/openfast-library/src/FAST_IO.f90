@@ -22,7 +22,30 @@
 MODULE FAST_IO
 
    USE FAST_ModTypes
+   USE NWTC_Library!, ONLY: ReKi
    USE FAST_VTK
+   use FAST_Types, ONLY: FAST_OutputFileType, FAST_ModuleMapType, FAST_ParameterType, FAST_MiscVarType, FAST_TurbineType
+   USE FAST_Types, ONLY: NumModules, MaxNBlades
+   USE FAST_Types, ONLY: HydroDyn_InputType, MAP_InputType, BD_InputType, SD_InputType, ED_InputType, AD_InputType
+   USE FAST_Types, ONLY: BD_OutputType, IceD_OutputType, ED_OutputType, SD_OutputType
+   USE FAST_Types, ONLY: Module_Unknown, Module_None, Module_IfW, Module_MAP, Module_IceF, Module_OpFM, Module_SD, Module_MD, Module_Orca, Module_IceD, Module_SrvD, Module_ED, Module_AD14, Module_FEAM, Module_ExtPtfm, Module_HD, Module_AD, Module_BD
+   USE FAST_Types, ONLY: ElastoDyn_Data, BeamDyn_Data, ServoDyn_Data, AeroDyn14_Data, AeroDyn_Data, InflowWind_Data, OpenFOAM_Data, HydroDyn_Data, SubDyn_Data, ExtPtfm_Data, MAP_Data, FEAMooring_Data, MoorDyn_Data, OrcaFlex_Data, IceFloe_Data, IceDyn_Data
+   
+   USE ElastoDyn_Types
+   USE BeamDyn_Types
+   USE ServoDyn_Types
+   USE AeroDyn14_Types
+   USE AeroDyn_Types
+   USE InflowWind_Types
+   USE HydroDyn_Types
+   USE SubDyn_Types
+   USE ExtPtfm_MCKF_Types
+   USE MAP_Types
+   USE MoorDyn_Types
+   USE FEAMooring_Types
+   USE OrcaFlexInterface_Types
+   USE IceFloe_Types
+   USE IceDyn_Types
 
 IMPLICIT NONE
 
@@ -2073,5 +2096,73 @@ SUBROUTINE WriteMotionMeshesToFile(time, y_ED, u_SD, y_SD, u_HD, u_MAP, y_BD, u_
    !CLOSE(unOut)
    !      
 END SUBROUTINE WriteMotionMeshesToFile   
+
+!----------------------------------------------------------------------------------------------------------------------------------
+!> This routine writes Input Mesh information to a binary file (for debugging). It both opens and closes the file.
+SUBROUTINE WriteInputMeshesToFile(u_ED, u_AD, u_SD, u_HD, u_MAP, u_BD, FileName, ErrStat, ErrMsg) 
+   TYPE(ED_InputType),        INTENT(IN)  :: u_ED           !< ElastoDyn inputs
+   TYPE(AD_InputType),        INTENT(IN)  :: u_AD           !< AeroDyn inputs
+   TYPE(SD_InputType),        INTENT(IN)  :: u_SD           !< SubDyn inputs
+   TYPE(HydroDyn_InputType),  INTENT(IN)  :: u_HD           !< HydroDyn inputs
+   TYPE(MAP_InputType),       INTENT(IN)  :: u_MAP          !< MAP inputs
+   TYPE(BD_InputType),        INTENT(IN)  :: u_BD(:)        !< BeamDyn inputs
+   CHARACTER(*),              INTENT(IN)  :: FileName       !< Name of file to write this information to
+   INTEGER(IntKi)                         :: ErrStat        !< Error status of the operation
+   CHARACTER(*)                           :: ErrMsg         !< Error message if ErrStat /= ErrID_None
+
+   INTEGER(IntKi)           :: unOut
+   INTEGER(IntKi)           :: K_local
+   INTEGER(B4Ki), PARAMETER :: File_ID = 3
+   INTEGER(B4Ki)            :: NumBl
+
+      ! Open the binary output file:
+   unOut=-1      
+   CALL GetNewUnit( unOut, ErrStat, ErrMsg )
+   CALL OpenBOutFile ( unOut, TRIM(FileName), ErrStat, ErrMsg )
+      IF (ErrStat /= ErrID_None) RETURN
+
+   ! note that I'm not doing anything with the errors here, so it won't tell
+   ! you there was a problem writing the data unless it was the last call.
+
+      ! Add a file identification number (in case we ever have to change this):
+   WRITE( unOut, IOSTAT=ErrStat )   File_ID
+
+      ! Add how many blade meshes there are:
+   NumBl =  SIZE(u_ED%BladePtLoads,1)   ! Note that NumBl is B4Ki 
+   WRITE( unOut, IOSTAT=ErrStat )   NumBl
+      
+      ! Add all of the input meshes:
+   DO K_local = 1,NumBl
+      CALL MeshWrBin( unOut, u_ED%BladePtLoads(K_local), ErrStat, ErrMsg )
+   END DO            
+   CALL MeshWrBin( unOut, u_ED%TowerPtLoads,            ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_ED%PlatformPtMesh,          ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_SD%TPMesh,                  ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_SD%LMesh,                   ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_HD%Morison%distribMesh,     ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_HD%Morison%lumpedMesh,      ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_HD%Mesh,                    ErrStat, ErrMsg )
+   CALL MeshWrBin( unOut, u_MAP%PtFairDisplacement,     ErrStat, ErrMsg )
+      ! Add how many BD blade meshes there are:
+   NumBl =  SIZE(u_BD,1)   ! Note that NumBl is B4Ki 
+   WRITE( unOut, IOSTAT=ErrStat )   NumBl
+   
+   DO K_local = 1,NumBl
+      CALL MeshWrBin( unOut, u_BD(K_local)%RootMotion, ErrStat, ErrMsg )
+      CALL MeshWrBin( unOut, u_BD(K_local)%DistrLoad, ErrStat, ErrMsg )
+   END DO            
+      
+      ! Add how many AD blade meshes there are:
+   NumBl =  SIZE(u_AD%BladeMotion,1)   ! Note that NumBl is B4Ki 
+   WRITE( unOut, IOSTAT=ErrStat )   NumBl
+   
+   DO K_local = 1,NumBl
+      CALL MeshWrBin( unOut, u_AD%BladeMotion(k_local), ErrStat, ErrMsg )
+   END DO    
+      
+      ! Close the file
+   CLOSE(unOut)
+         
+END SUBROUTINE WriteInputMeshesToFile   
 
 END MODULE

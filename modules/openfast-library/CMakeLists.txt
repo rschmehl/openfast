@@ -44,6 +44,7 @@ target_link_libraries(openfast_prelib
   )
 
 add_library(openfast_postlib
+  src/FAST_Describe.f90
   src/FAST_Lin.f90
   src/FAST_Mods.f90
   src/FAST_Init.f90

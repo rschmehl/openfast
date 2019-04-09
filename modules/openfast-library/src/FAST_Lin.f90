@@ -22,8 +22,26 @@
 !**********************************************************************************************************************************
 MODULE FAST_Linear
 
-   USE FAST_Solver  ! I mostly just want the modules that are inherited from this module, not the routines in it
+   ! USE FAST_Solver  ! I mostly just want the modules that are inherited from this module, not the routines in it
+   USE NWTC_Library
+   USE NWTC_LAPACK
+
+   USE FAST_ModTypes
+   USE FAST_Types, ONLY: maxnblades
+   USE FAST_Types, ONLY: FAST_TurbineType, FAST_LinType
    
+   use FAST_Types, ONLY: FAST_OutputFileType, FAST_ModuleMapType, FAST_ParameterType, FAST_MiscVarType
+   USE FAST_Types, ONLY: ED_InputType, AD_InputType
+   USE FAST_Types, ONLY: AD_OutputType, ED_OutputType
+   USE FAST_Types, ONLY: Module_IfW, Module_SrvD, Module_ED, Module_AD, Module_BD
+   USE FAST_Types, ONLY: ElastoDyn_Data, BeamDyn_Data, ServoDyn_Data, AeroDyn14_Data, AeroDyn_Data, InflowWind_Data, OpenFOAM_Data, HydroDyn_Data, SubDyn_Data, ExtPtfm_Data, MAP_Data, FEAMooring_Data, MoorDyn_Data, OrcaFlex_Data, IceFloe_Data, IceDyn_Data
+
+   USE AeroDyn
+   USE BeamDyn
+   USE ElastoDyn
+   USE InflowWind
+   USE ServoDyn
+
    IMPLICIT NONE
 
    CONTAINS
