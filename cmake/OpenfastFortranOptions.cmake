@@ -131,6 +131,16 @@ macro(set_fast_intel_fortran_posix)
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     set( CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -check all -traceback" )
   endif()
+
+  # intel profiling flags
+  # phases: vec, par, openmp
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-phase=vec -qopt-report=5")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -debug all")
+  # set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-routine=HydroDyn_Init")
+
+  # Intel processor feature sets
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -xHOST")   # Use feature set for CPU used to compile
+  # set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -xSKYLAKE-AVX512")   # Use Eagle processor feature set
 endmacro(set_fast_intel_fortran_posix)
 
 #
