@@ -120,7 +120,7 @@ endmacro(set_fast_intel_fortran)
 # arch
 #
 macro(set_fast_intel_fortran_posix)
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpic -fpp")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpic -fpp -shared-intel")
   # Deal with Double/Single precision
   if (DOUBLE_PRECISION)
     add_definitions(-DDOUBLE_PRECISION)
@@ -131,6 +131,17 @@ macro(set_fast_intel_fortran_posix)
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     set( CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -check all -traceback" )
   endif()
+
+  # intel profiling flags
+  # phases: vec, par, openmp
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-phase=vec,openmp -qopt-report=5")
+  # set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -debug all")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -debug inline-debug-info")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-routine=Create_Augmented_Ln2_Src_Mesh") # Create_Augmented_Ln2_Src_Mesh, Morison_CalcOutput
+
+  # Intel processor feature sets
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -xHOST")   # Use feature set for CPU used to compile
+  # set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -xSKYLAKE-AVX512")   # Use Eagle processor feature set
 endmacro(set_fast_intel_fortran_posix)
 
 #
