@@ -40,12 +40,14 @@ set(NWTCLIBS_SOURCES
   )
 
 get_filename_component(FCNAME ${CMAKE_Fortran_COMPILER} NAME)
-if(BUILD_OPENFAST_SIMULINK_API)
+
+if(BUILD_SIMULINK_API)
+
+  find_package(Matlab REQUIRED)
 
   if (APPLE OR UNIX)
     if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU")
-      # set(NWTC_SYS_FILE src/SysMatlabLinuxGnu.f90)
-      message(FATAL_ERROR "SIMULINK with GNU is not yet supported.")
+      set(NWTC_SYS_FILE src/SysMatlabLinuxGnu.f90)
     elseif (${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel")
       set(NWTC_SYS_FILE src/SysMatlabLinuxIntel.f90)
     endif()
@@ -79,13 +81,7 @@ else (NWTC_SYS_FILE)
 endif (NWTC_SYS_FILE)
 
 add_library(nwtclibs ${NWTCLIBS_SOURCES})
-
-if(BUILD_OPENFAST_SIMULINK_API)
-  find_package(Matlab REQUIRED)
-  target_link_libraries(nwtclibs ${LAPACK_LIBRARIES} ${CMAKE_DL_LIBS} ${Matlab_MEX_LIBRARY})
-else()
-  target_link_libraries(nwtclibs ${LAPACK_LIBRARIES} ${CMAKE_DL_LIBS})
-endif()
+target_link_libraries(nwtclibs ${LAPACK_LIBRARIES} ${CMAKE_DL_LIBS} ${Matlab_MEX_LIBRARY})
 
 install(TARGETS nwtclibs
   EXPORT "${CMAKE_PROJECT_NAME}Libraries"
