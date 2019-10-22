@@ -338,11 +338,11 @@ SUBROUTINE WrNR ( Str )
 
    CHARACTER(*), INTENT(IN)     :: Str       ! The string to write to the screen.
    INTEGER                      :: Stat      ! Number of characters printed
-   INTEGER, EXTERNAL            :: mexPrintF ! Matlab function to print to the command window
+   INTEGER, EXTERNAL            :: mexPrintf ! Matlab function to print to the command window
    CHARACTER(1024), SAVE        :: Str2      ! bjj: need static variable to print to Matlab command window
 
    Str2 = ' '//Str
-   Stat = mexPrintF( Str2 )
+   Stat = mexPrintf( Str2 )
    
    RETURN
 END SUBROUTINE WrNR ! ( Str )
@@ -367,7 +367,7 @@ SUBROUTINE WriteScr ( Str, Frm )
    CHARACTER(*), INTENT(IN)     :: Str       ! The input string to write to the screen.
    CHARACTER(*), INTENT(IN)     :: Frm       ! Format specifier for the output.
    INTEGER                      :: ErrStat   ! Error status of write operation (so code doesn't crash)
-   INTEGER, EXTERNAL            :: mexPrintF ! Matlab function to print to the command window
+   INTEGER, EXTERNAL            :: mexPrintf ! Matlab function to print to the command window
    INTEGER                      :: Stat      ! Number of characters printed to the screen
    CHARACTER( 1024 ), SAVE      :: Str2      ! A temporary string (Str written with the Frm Format specification) (bjj: this apparently needs to be a static variable so it writes to the Matlab command window)
 
@@ -378,7 +378,7 @@ SUBROUTINE WriteScr ( Str, Frm )
    END IF
 
    Str2 = trim(Str2)//NewLine
-   Stat = mexPrintF( Str2 )
+   Stat = mexPrintf( Str2 )
 
 END SUBROUTINE WriteScr ! ( Str )
 !=======================================================================
