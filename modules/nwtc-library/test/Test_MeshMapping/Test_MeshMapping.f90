@@ -25,7 +25,7 @@ subroutine Test_TestMeshMapping()
    call random_seed(SIZE=n1)
    CALL RANDOM_SEED (PUT = SEED (1 : n1))
 
-   DO TestNumber=1,13
+   DO TestNumber=1,1
 
       debug_print = .false.
 
