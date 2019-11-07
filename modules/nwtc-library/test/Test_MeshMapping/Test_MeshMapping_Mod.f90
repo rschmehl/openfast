@@ -1,123 +1,100 @@
 module TestMeshMapping_Mod
    
-   USE NWTC_Library
+use NWTC_Library
    
-   implicit none
+implicit none
 
-   TYPE(meshtype) :: mesh1_I, mesh1_O
-   TYPE(meshtype) :: mesh2_I, mesh2_O 
+type(meshtype) :: mesh1_I, mesh1_O
+type(meshtype) :: mesh2_I, mesh2_O 
+type(meshtype) :: mesh1_I_op, mesh1_O_op
+type(meshtype) :: mesh2_I_op, mesh2_O_op 
+type(MeshMapType) :: Map_Mod1_Mod2        ! Data for mapping meshes from mod1 to mod2
+type(MeshMapType) :: Map_Mod2_Mod1        ! Data for mapping meshes from mod2 to mod1
+   
+real(R8Ki) :: Orientation(3,3), angles(3)
+real(ReKi) :: position(3)
+real(ReKi) :: Angle, e, mf, mm
 
-   TYPE(meshtype) :: mesh1_I_op, mesh1_O_op
-   TYPE(meshtype) :: mesh2_I_op, mesh2_O_op 
+integer :: NNodes, I,J, n1, n2
+integer :: Mesh1Type
+integer :: Mesh2Type
+
+character(*), parameter :: Fmt = '(ES10.3E2)'
+character(*), parameter :: ErrFmt = '(A28,i2,1x,F18.8,1x,F18.4,13(1x,F18.8))'
+character(*), parameter :: ErrTxtFmt = '(A28,A2,15(1x,A18))'
+
+integer(IntKi) :: ErrStat
+character(1024) :: ErrMsg   
    
-   
-   TYPE(MeshMapType)       :: Map_Mod1_Mod2        ! Data for mapping meshes from mod1 to mod2
-   TYPE(MeshMapType)       :: Map_Mod2_Mod1        ! Data for mapping meshes from mod1 to mod2
-   
-   REAL(R8Ki)              :: Orientation(3,3), angles(3)
-   REAL(ReKi)              :: position(3)
-   REAL(ReKi)              :: Angle, e, mf, mm
-   
-   CHARACTER(*), PARAMETER :: Fmt = '(ES10.3E2)'
-   CHARACTER(*), PARAMETER :: ErrFmt = '(A28,i2,1x,F18.8,1x,F18.4,13(1x,F18.8))'
-   CHARACTER(*), PARAMETER :: ErrTxtFmt = '(A28,A2,15(1x,A18))'
-   
-   !
-   INTEGER :: NNodes, I,J, n1, n2
-      
-   INTEGER :: Mesh1Type
-   INTEGER :: Mesh2Type
-   
-   INTEGER(IntKi) :: ErrStat
-   CHARACTER(1024) :: ErrMsg   
-   
-   logical :: debug_print = .false.
-   
-      
-        
+logical :: debug_print = .false.
+
 contains   
-      
-   ! ..............................................   
-   subroutine getRotationPerturb(Vec)
-      real(reki), intent(inout) :: vec(:)
-      
-      real(reki)                :: mx,mn
-      integer                   :: nq
-      
-      !call getRandomVector(Vec, 0.4_ReKi)
-      
-      call random_number( Vec )
-      mx = maxval(Vec)
-      mn = minval(Vec)
-            
-      Vec = 0.4_ReKi*(2.*(Vec-mn)/(mx-mn)-1.)/real(n1**2)  !note n1 from the loop this is called in
-          
-      do nq=2,size(Vec),3
-         Vec(nq-1)=0
-         Vec(nq+1)=0
-      end do
-                 
-      
-      !vec = 0.0_ReKi
-   
-   end subroutine getRotationPerturb
-   ! ..............................................   
-   subroutine getRandomVector(Vec, InLimits)
-      real(reki), intent(inout)           :: vec(:)
-      real(reki), intent(in   ), optional :: InLimits
-      real(reki)                          :: Limits
 
-      real(reki)                          :: mx,mn
-      
-      if (present(InLimits)) then
-         Limits = abs(InLimits)
-         if (EqualRealNos( Limits, 0.0_ReKi ) ) Limits = 1.0_ReKi
-      else
-         Limits = 1.0_ReKi
-      end if
-      
-      call random_number( Vec )
-      mx = maxval(Vec)
-      mn = minval(Vec)
+subroutine getRotationPerturb(Vec)
+    real(reki), intent(inout) :: Vec(:)
+    real(reki) :: mx, mn
+    integer :: nq
 
-      Vec = Limits*(2.*(Vec-mn)/(mx-mn)-1.)/real(n1**3)  !note n1 from the loop this is called in
-      !Vec = (Vec)/real(n1**3)  !note n1 from the loop this is called in
-      
-   end subroutine getRandomVector
-   ! ..............................................   
-   subroutine getLinearOrient(theta, Orientation)
-      real(reki), intent(in   )           :: theta(3)
-      real(R8ki), intent(inout)           :: Orientation(3,3)
-   
-      !call eye(Orientation,ErrStat,ErrMsg)
-      !Orientation = Orientation - SkewSymMat(theta)
+    call random_number( Vec )
+    mx = maxval(Vec)
+    mn = minval(Vec)
             
-      call SmllRotTrans( 'orientation', theta(1) &
-                                      , theta(2) &
-                                      , theta(3) & 
-                                      , Orientation, ErrStat=ErrStat, ErrMsg=ErrMsg)  
+    Vec = 0.4_ReKi*(2.*(Vec-mn)/(mx-mn)-1.)/real(n1**2)  !note n1 from the loop this is called in
+            
+    do nq=2,size(Vec),3
+        Vec(nq-1)=0
+        Vec(nq+1)=0
+    end do
+
+end subroutine getRotationPerturb
+
+subroutine getRandomVector(Vec, InLimits)
+    real(reki), intent(inout)           :: vec(:)
+    real(reki), intent(in   ), optional :: InLimits
+    real(reki)                          :: Limits
+    real(reki)                          :: mx,mn
       
+    if (present(InLimits)) then
+        Limits = abs(InLimits)
+        if (EqualRealNos( Limits, 0.0_ReKi ) ) Limits = 1.0_ReKi
+    else
+        Limits = 1.0_ReKi
+    end if
       
-   end subroutine getLinearOrient
-   ! ..............................................   
-   subroutine WrErrorLine(Desc, Actual, Approx, DestField, DeltaS1, DeltaS2, DeltaS3, DeltaS4)
-   character(*), intent(in)            :: Desc
-   real(reki)  , intent(in)            :: Actual(:)
-   real(reki)  , intent(in)            :: Approx(:)
-   real(reki)  , intent(in)            :: DestField(:,:)
-   real(reki)  , intent(in)            :: DeltaS1(:)
-   real(reki)  , intent(in), optional  :: DeltaS2(:)
-   real(reki)  , intent(in), optional  :: DeltaS3(:)
-   real(reki)  , intent(in), optional  :: DeltaS4(:)
+    call random_number( Vec )
+    mx = maxval(Vec)
+    mn = minval(Vec)
+
+    Vec = Limits*(2.*(Vec-mn)/(mx-mn)-1.)/real(n1**3)  !note n1 from the loop this is called in
+end subroutine getRandomVector
+
+subroutine getLinearOrient(theta, Orientation)
+    real(reki), intent(in   )           :: theta(3)
+    real(R8ki), intent(inout)           :: Orientation(3,3)
+
+    call SmllRotTrans( 'orientation', theta(1) &
+                                    , theta(2) &
+                                    , theta(3) & 
+                                    , Orientation, ErrStat=ErrStat, ErrMsg=ErrMsg)  
+end subroutine getLinearOrient
+
+subroutine WrErrorLine(Desc, Actual, Approx, DestField, DeltaS1, DeltaS2, DeltaS3, DeltaS4)
+    character(*), intent(in)            :: Desc
+    real(reki)  , intent(in)            :: Actual(:)
+    real(reki)  , intent(in)            :: Approx(:)
+    real(reki)  , intent(in)            :: DestField(:,:)
+    real(reki)  , intent(in)            :: DeltaS1(:)
+    real(reki)  , intent(in), optional  :: DeltaS2(:)
+    real(reki)  , intent(in), optional  :: DeltaS3(:)
+    real(reki)  , intent(in), optional  :: DeltaS4(:)
    
    real(reki)                          :: MaxAbsErr, MaxRelErr
-   real(reki)                          :: AbsErr,    RelErr, Denom
+   real(reki)                          :: AbsErr, RelErr, Denom
    real(reki)                          :: v(3)
    
    integer(intki)                      :: i
-   REAL(ReKi), parameter               :: mmin = 1D-7; !sqrt(epsilon(mmin)) !1D-7 !
-   
-   
+   real(ReKi), parameter               :: mmin = 1D-7; !sqrt(epsilon(mmin)) !1D-7 !
+
    MaxAbsErr = 0.0_ReKi
    MaxRelErr = 0.0_ReKi
 
@@ -143,27 +120,6 @@ contains
       end if
       
    end do
-   
-   if (debug_print) then
-      write( 58, *)   
-      write( 59, *)   
-      write( 60, *)   
-   end if
-      
-   
-   !do i=1,size(Actual)
-   !   
-   !   AbsErr = abs(Actual(i) - Approx(i))
-   !   if (AbsErr > MaxAbsErr) then
-   !      MaxAbsErr = max(MaxAbsErr,AbsErr) 
-   !         
-   !      RelErr = AbsErr / max(mmin, Actual(i))
-   !      
-   !      MaxRelErr = RelErr !jmj wants the relative error associated with the node with greatest absolute error
-   !      !MaxRelErr = max(MaxAbsErr,RelErr) 
-   !   end if
-   !                     
-   !end do
 
    MaxRelErr = MaxRelErr*100.
    !note: n1 comes from loops where this is called (global variable)!
@@ -177,8 +133,6 @@ contains
    else
       write(*,ErrFmt) Desc//': ', n1, MaxAbsErr, MaxRelErr, maxval(abs(Actual)), maxval(abs(DestField)), maxval(abs(DeltaS1))
    end if
-   
-      
    end subroutine
    ! .............................................. 
    subroutine CreateOutputMeshes_Test1()   
@@ -216,6 +170,7 @@ contains
          position = (/0.0_ReKi, 0.0_ReKi, 1.0_ReKi*(j-1) /)
          CALL MeshPositionNode ( mesh1_O, j, position, ErrStat, ErrMsg )     
          IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))             
+end subroutine
 
          CALL MeshConstructElement ( mesh1_O, ELEMENT_POINT, ErrStat, ErrMsg, j )
          IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))                     
@@ -223,6 +178,9 @@ contains
       END DO   
          
       CALL MeshCommit ( mesh1_O, ErrStat, ErrMsg )   
+   
+      
+   end subroutine
       IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg)) 
       if (ErrStat >= AbortErrLev) CALL ProgAbort("Error creating Mesh1 output for test 1.")
 
