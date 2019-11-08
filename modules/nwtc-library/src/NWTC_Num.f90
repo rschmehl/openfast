@@ -55,6 +55,8 @@ MODULE NWTC_Num
    REAL(ReKi)                                :: TwoByPi                       !< 2/Pi
    REAL(ReKi)                                :: TwoPi                         !< 2*Pi
 
+   REAL(ReKi)                                :: one_third = 1.0_ReKi / 3.0_ReKi  !< 1.0 / 3.0
+   REAL(ReKi)                                :: one_sixth = 1.0_ReKi / 6.0_ReKi  !< 1.0 / 6.0
 !=======================================================================
 
       ! Create interfaces for generic routines that use specific routines.
@@ -5032,7 +5034,6 @@ end function Rad2M180to180Deg
       TwoByPi =  2.0_ReKi/Pi
       TwoPi   =  2.0_ReKi*Pi
       Inv2Pi  =  0.5_ReKi/Pi        ! 1.0/TwoPi
-
 
          ! IEEE constants:
       CALL Set_IEEE_Constants( NaN_D, Inf_D, NaN, Inf )
