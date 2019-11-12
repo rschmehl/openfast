@@ -1697,7 +1697,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             ENDDO
 
                ! Now we apply the FFT to the first piece.
-            CALL ApplyCFFT(  NewmanTerm1t(:), NewmanTerm1C(:), FFT_Data, ErrStatTmp )
+            CALL ApplyCFFT(  NewmanTerm1t, NewmanTerm1C, FFT_Data, ErrStatTmp )
             CALL SetErrStat(ErrStatTmp,ErrMsgTmp,ErrStat,ErrMsg,'NewmanApp_InitCalc')
             IF ( ErrStat >= AbortErrLev ) THEN
                IF (ALLOCATED(TmpData3D))        DEALLOCATE(TmpData3D,STAT=ErrStatTmp)
@@ -1711,7 +1711,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             END IF
 
                ! Now we apply the FFT to the second piece.
-            CALL ApplyCFFT( NewmanTerm2t(:), NewmanTerm2C(:), FFT_Data, ErrStatTmp )
+            CALL ApplyCFFT( NewmanTerm2t, NewmanTerm2C, FFT_Data, ErrStatTmp )
             CALL SetErrStat(ErrStatTmp,ErrMsgTmp,ErrStat,ErrMsg,'NewmanApp_InitCalc')
             IF ( ErrStat >= AbortErrLev ) THEN
                IF (ALLOCATED(TmpData3D))        DEALLOCATE(TmpData3D,STAT=ErrStatTmp)
@@ -2128,7 +2128,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             ENDDO
 
                ! Now we apply the FFT to the result of the sum
-            CALL ApplyFFT_cx(  TmpDiffQTFForce(:),  TmpComplexArr(:), FFT_Data, ErrStatTmp )
+            CALL ApplyFFT_cx(  TmpDiffQTFForce,  TmpComplexArr, FFT_Data, ErrStatTmp )
             CALL SetErrStat(ErrStatTmp,'Error occured while applying the FFT to the second term of the difference QTF.', &
                            ErrStat,ErrMsg,'DiffQTF_InitCalc')
             IF ( ErrStat >= AbortErrLev ) THEN
@@ -2626,7 +2626,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
 
 
                ! Now we apply the FFT to the result of the sum.
-            CALL ApplyFFT_cx(  Term1Array(:),  Term1ArrayC(:), FFT_Data, ErrStatTmp )
+            CALL ApplyFFT_cx(  Term1Array,  Term1ArrayC, FFT_Data, ErrStatTmp )
             CALL SetErrStat(ErrStatTmp,'Error occured while applying the FFT to the first term of the Sum QTF.', &
                            ErrStat,ErrMsg,'SumQTF_InitCalc')
             IF ( ErrStat >= AbortErrLev ) THEN
@@ -2635,7 +2635,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             END IF
 
                ! Now we apply the FFT to the result of the sum.
-            CALL ApplyFFT_cx(  Term2Array(:), Term2ArrayC(:), FFT_Data, ErrStatTmp )
+            CALL ApplyFFT_cx(  Term2Array, Term2ArrayC, FFT_Data, ErrStatTmp )
             CALL SetErrStat(ErrStatTmp,'Error occured while applying the FFT to the second term of the Sum QTF.', &
                            ErrStat,ErrMsg,'SumQTF_InitCalc')
             IF ( ErrStat >= AbortErrLev ) THEN
@@ -3092,7 +3092,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             p%MnDriftDims(6)     =  InitInp%PtfmYF2
          ENDIF
       ELSE
-         p%MnDriftDims(:)        = .FALSE.               ! Set all dimensions to false unless we are actually calculating something
+         p%MnDriftDims = .FALSE.               ! Set all dimensions to false unless we are actually calculating something
       ENDIF
       IF ( ErrStat >= AbortErrLev ) THEN
          CALL CleanUp
@@ -3137,7 +3137,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
             p%NewmanAppDims(6)   =  InitInp%PtfmYF2
          ENDIF
       ELSE
-         p%NewmanAppDims(:)      = .FALSE.               ! Set all dimensions to false unless we are actually calculating something
+         p%NewmanAppDims = .FALSE.               ! Set all dimensions to false unless we are actually calculating something
       ENDIF
       IF ( ErrStat >= AbortErrLev ) THEN
          CALL CleanUp
@@ -3163,7 +3163,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
          p%MnDriftDims(5)     =  InitInp%PtfmPF2
          p%MnDriftDims(6)     =  InitInp%PtfmYF2
       ELSE
-         p%DiffQTFDims(:)  = .FALSE.            ! Set all dimensions to false unless we are actually calculating something
+         p%DiffQTFDims = .FALSE.            ! Set all dimensions to false unless we are actually calculating something
       ENDIF
 
 
@@ -3177,7 +3177,7 @@ SUBROUTINE WAMIT2_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, Ini
          p%SumQTFDims(5)   =  InitInp%PtfmPF2
          p%SumQTFDims(6)   =  InitInp%PtfmYF2
       ELSE
-         p%SumQTFDims(:)   = .FALSE.            ! Set all dimensions to false unless we are actually calculating something
+         p%SumQTFDims = .FALSE.            ! Set all dimensions to false unless we are actually calculating something
       ENDIF
 
 
@@ -5459,7 +5459,7 @@ SUBROUTINE WAMIT2_CalcOutput( Time, u, p, x, xd, z, OtherState, y, m, ErrStat, E
          ! Compute the 2nd order load contribution from incident waves:
 
       DO I = 1,6     ! Loop through all wave excitation forces and moments
-         m%F_Waves2(I) = InterpWrappedStpReal ( REAL(Time, SiKi), p%WaveTime(:), p%WaveExctn2(:,I), &
+         m%F_Waves2(I) = InterpWrappedStpReal ( REAL(Time, SiKi), p%WaveTime, p%WaveExctn2(:,I), &
                                                   m%LastIndWave, p%NStepWave + 1       )
       END DO          ! I - All wave excitation forces and moments
 

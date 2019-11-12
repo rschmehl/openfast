@@ -5200,7 +5200,7 @@ CONTAINS
       FASTdata%Descr(IChr:IChr) = CHAR( DescStrASCII(IChr) )
    END DO
 
-   TmpStrASCII(:) = ICHAR( ' ' )
+   TmpStrASCII = ICHAR( ' ' )
    DO IChan=1,FASTdata%NumChans+1
       READ (UnIn, IOSTAT=ErrStat2)  TmpStrASCII
       IF ( ErrStat2 /= 0 )  THEN
@@ -5215,7 +5215,7 @@ CONTAINS
       END DO
    END DO
 
-   TmpStrASCII(:) = ICHAR( ' ' )
+   TmpStrASCII = ICHAR( ' ' )
    DO IChan=1,FASTdata%NumChans+1
       READ (UnIn, IOSTAT=ErrStat2)  TmpStrASCII
       IF ( ErrStat2 /= 0 )  THEN
@@ -5257,7 +5257,7 @@ CONTAINS
       ! Put time data in the data array.
 
    IF ( FileType == FileFmtID_WithTime )  THEN
-      FASTdata%Data(:,1) = ( TmpTimeArray(:) - TimeOff )/TimeScl;
+      FASTdata%Data(:,1) = ( TmpTimeArray - TimeOff )/TimeScl;
       FASTdata%TimeStep  = FASTdata%Data(2,1) - FASTdata%Data(1,1)
    ELSE
       FASTdata%Data(:,1) = REAL( TimeOut1, DbKi ) + REAL( TimeIncr, DbKi )*[ (IRow, IRow=0,FASTdata%NumRecs-1 ) ];
@@ -5287,7 +5287,7 @@ CONTAINS
          FASTdata%Data(IRow,2:) = REAL(TmpInArray(IRow,:), ReKi)
       ELSE
             ! Denormalize the data one row at a time and store it in the FASTdata%Data array.
-         FASTdata%Data(IRow,2:) = ( TmpInArray(IRow,:) - ColOff(:) )/ColScl(:)
+         FASTdata%Data(IRow,2:) = ( TmpInArray(IRow,:) - ColOff )/ColScl
       END IF
       
    END DO ! IRow=1,FASTdata%NumRecs
@@ -6850,8 +6850,8 @@ CONTAINS
    
    IF ( FileID /= FileFmtID_NoCompressWithoutTime ) THEN
       
-      ColMin(:) = AllOutData(:,1_IntKi)         ! Initialize the Min values for each channel
-      ColMax(:) = AllOutData(:,1_IntKi)         ! Initialize the Max values for each channel
+      ColMin = AllOutData(:,1_IntKi)         ! Initialize the Min values for each channel
+      ColMax = AllOutData(:,1_IntKi)         ! Initialize the Max values for each channel
 
       DO IT=2,NT                                ! Loop through the remaining time steps
          DO IC=1,NumOutChans                    ! Loop through the output channels
@@ -6954,14 +6954,14 @@ CONTAINS
 
    IF ( FileID /= FileFmtID_NoCompressWithoutTime ) THEN
       
-      WRITE (UnIn, IOSTAT=ErrStat2)  ColScl(:)                                    ! The channel slopes for scaling
+      WRITE (UnIn, IOSTAT=ErrStat2)  ColScl                                       ! The channel slopes for scaling
          IF ( ErrStat2 /= 0 ) THEN
             CALL SetErrStat( ErrID_Fatal, 'Error writing ColScl to the FAST binary file.', ErrStat, ErrMsg, RoutineName )
             CALL Cleanup( )
             RETURN
          END IF
 
-      WRITE (UnIn, IOSTAT=ErrStat2)  ColOff(:)                                    ! The channel offsets for scaling
+      WRITE (UnIn, IOSTAT=ErrStat2)  ColOff                                       ! The channel offsets for scaling
          IF ( ErrStat2 /= 0 ) THEN
             CALL SetErrStat( ErrID_Fatal, 'Error writing ColOff to the FAST binary file.', ErrStat, ErrMsg, RoutineName )
             CALL Cleanup( )
@@ -7099,7 +7099,7 @@ CONTAINS
       
       Fmt = "(2x, "//TRIM(Num2LStr(nr))//"(1x,"//ReFmt//"))"
 
-      WRITE( Un, Fmt, IOSTAT=ErrStat ) A(:)
+      WRITE( Un, Fmt, IOSTAT=ErrStat ) A
       IF (ErrStat /= 0) THEN
          CALL WrScr('Error '//TRIM(Num2LStr(ErrStat))//' writing matrix in WrMatrix1R4().')
          RETURN
@@ -7129,7 +7129,7 @@ CONTAINS
       
       Fmt = "(2x, "//TRIM(Num2LStr(nr))//"(1x,"//ReFmt//"))"   
    
-      WRITE( Un, Fmt, IOSTAT=ErrStat ) A(:)
+      WRITE( Un, Fmt, IOSTAT=ErrStat ) A
       IF (ErrStat /= 0) THEN
          CALL WrScr('Error '//TRIM(Num2LStr(ErrStat))//' writing matrix in WrMatrix1R8().')
          RETURN
@@ -7159,7 +7159,7 @@ CONTAINS
       
       Fmt = "(2x, "//TRIM(Num2LStr(nr))//"(1x,"//ReFmt//"))"   
    
-      WRITE( Un, Fmt, IOSTAT=ErrStat ) A(:)
+      WRITE( Un, Fmt, IOSTAT=ErrStat ) A
       IF (ErrStat /= 0) THEN
          CALL WrScr('Error '//TRIM(Num2LStr(ErrStat))//' writing matrix in WrMatrix1R16().')
          RETURN
@@ -7341,7 +7341,7 @@ CONTAINS
                jc = jc + 1
             end if            
          end do
-         if (present(ExtCol)) ThisRow(jc:) = ExtCol(:)         
+         if (present(ExtCol)) ThisRow(jc:) = ExtCol
       end if         
                               
       WRITE( Un, Fmt, IOSTAT=ErrStat ) ThisRow
