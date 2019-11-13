@@ -190,7 +190,6 @@ subroutine CreateOutputMeshes_Test1()
         Mesh1_O%RotationAcc(:,j)     = (/ 2.0, 0.0, 0.0 /)
     end do
 
-    ! Mesh2 (Output: Loads)
     ! Mesh2
     !     input: motions
     !     output: loads
@@ -230,208 +229,191 @@ subroutine CreateOutputMeshes_Test1()
     end do
 end subroutine CreateOutputMeshes_Test1
 
-   subroutine CreateOutputMeshes_Test2(ThisCase)   
-      ! this is a line2-to-line2 mapping, with the same meshes in an upside-down "T" shape, though
-      ! one is discretized more than the other.
-      character(1), intent(in) :: ThisCase
-      real(reki) :: dx, dz
-      integer NumHorizNodes, NumVertNodes, ConnectionNode
-      REAL(ReKi), PARAMETER :: Len_Horiz = 4
-      REAL(ReKi), PARAMETER :: Len_Vert  = 2
-      type(meshtype) :: rotateMesh
-      type(meshmaptype) :: rotateMesh_map
-
+subroutine CreateOutputMeshes_Test2(ThisCase)   
+    ! This is a line2-to-line2 mapping, with the same meshes in an upside-down "T" shape, though
+    ! one is discretized more than the other.
+    character(1), intent(in) :: ThisCase
+    real(reki) :: dx, dz
+    integer NumHorizNodes, NumVertNodes, ConnectionNode
+    real(ReKi), parameter :: Len_Horiz = 4
+    real(ReKi), parameter :: Len_Vert  = 2
+    type(meshtype) :: rotateMesh
+    type(meshmaptype) :: rotateMesh_map
    
-      Mesh1Type = ELEMENT_LINE2
-      Mesh2Type = ELEMENT_LINE2
-      
-      !.........................
-      ! Mesh1 (Output: Motions)
-      !.........................
-      SELECT CASE (ThisCase)
-      CASE ('A')
-         NumHorizNodes  = 9  
-         ConnectionNode = 5
-         NumVertNodes   = 8
-      CASE ('B','C','D')
-         NumHorizNodes  =  5
-         ConnectionNode =  3
-         NumVertNodes   =  2
-      END SELECT
-      
-            
-      Nnodes = NumHorizNodes + NumVertNodes !7 
-      dx = Len_Horiz/(NumHorizNodes-1) !1.0
-      dz = Len_Vert/(NumVertNodes) !1.0
-   
-      CALL MeshCreate( BlankMesh          = mesh1_O           &
-                       , IOS              = COMPONENT_OUTPUT  &
-                       , NNodes           = NNodes            &
-                       , Orientation      = .TRUE.            &
-                       , TranslationDisp  = .TRUE.            &
-                       , TranslationVel   = .TRUE.            &
-                       , RotationVel      = .TRUE.            &
-                       , TranslationAcc   = .TRUE.            &
-                       , RotationAcc      = .TRUE.            &                                
-                       , ErrStat          = ErrStat           &
-                       , ErrMess          = ErrMsg            )
-      
-         IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
-      
+    Mesh1Type = ELEMENT_LINE2
+    Mesh2Type = ELEMENT_LINE2
 
-      CALL PositionNodesElements(mesh1_O, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)                 
-      if (ErrStat >= AbortErrLev) CALL ProgAbort("Error creating Mesh1 output for test 2.")
+    ! Mesh1
+    !     input: loads
+    !     output: motions
+    SELECT CASE (ThisCase)
+    CASE ('A')
+        NumHorizNodes  = 9  
+        ConnectionNode = 5
+        NumVertNodes   = 8
+    CASE ('B','C','D')
+        NumHorizNodes  =  5
+        ConnectionNode =  3
+        NumVertNodes   =  2
+    END SELECT
 
-      !..............
-      ! initialize Mesh1 output fields:
-      !..............      
-      
-      !... temp mesh, for rotation only:
-      CALL MeshCreate(BlankMesh  = RotateMesh                 &
-                       , IOS              = COMPONENT_OUTPUT  &
-                       , NNodes           = 1                 &
-                       , Orientation      = .TRUE.            &
-                       , TranslationDisp  = .TRUE.            &
-                       , TranslationVel   = .TRUE.            &
-                       , TranslationAcc   = .TRUE.            &
-                       , RotationVel      = .TRUE.            &
-                       , RotationAcc      = .TRUE.            &
-                       , ErrStat          = ErrStat           &
-                       , ErrMess          = ErrMsg            )
-      
-      CALL MeshPositionNode(RotateMesh, 1, mesh1_O%Position(:,ConnectionNode), ErrStat=ErrStat, ErrMess=ErrMsg, &
-                            Orient=mesh1_O%RefOrientation(:,:,ConnectionNode) )      ; IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
-      CALL MeshConstructElement ( RotateMesh, ELEMENT_POINT, ErrStat, ErrMsg, 1 )    ; IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
-      CALL MeshCommit ( RotateMesh, ErrStat, ErrMsg )                                ; IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
+    Nnodes = NumHorizNodes + NumVertNodes
+    dx = Len_Horiz/(NumHorizNodes-1)
+    dz = Len_Vert/(NumVertNodes)
    
-      Angle = (15.)*D2R      
-      !note this "looks" like the transpose, but isn't
-      RotateMesh%Orientation(:,1,1) = (/  COS(Angle) , -1.*SIN(Angle), 0.0_ReKi /)
-      RotateMesh%Orientation(:,2,1) = (/  SIN(Angle),      COS(Angle), 0.0_ReKi /)
-      RotateMesh%Orientation(:,3,1) = (/  0.0,         0.0,            1.0 /)
-      RotateMesh%TranslationDisp(:,1) = (/ 1.00, 1.50,  0.00 /) 
-      RotateMesh%TranslationVel( :,1) = (/   Pi,   Pi,  0.00_ReKi /) *0.0
-      RotateMesh%RotationVel(    :,1) = (/ 0.00, 0.00,  0.5 /) 
+    call MeshCreate( BlankMesh         = mesh1_O           &
+                    , IOS              = COMPONENT_OUTPUT  &
+                    , NNodes           = NNodes            &
+                    , Orientation      = .TRUE.            &
+                    , TranslationDisp  = .TRUE.            &
+                    , TranslationVel   = .TRUE.            &
+                    , RotationVel      = .TRUE.            &
+                    , TranslationAcc   = .TRUE.            &
+                    , RotationAcc      = .TRUE.            &                                
+                    , ErrStat          = ErrStat           &
+                    , ErrMess          = ErrMsg            )
+    if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+
+    call PositionNodesElements(mesh1_O, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)
+    if (ErrStat >= AbortErrLev) call ProgAbort("Error creating Mesh1 output for test 2.")
+
+    ! initialize Mesh1 output fields:
+
+    !... temp mesh, for rotation only:
+    call MeshCreate(  BlankMesh        = RotateMesh        &
+                    , IOS              = COMPONENT_OUTPUT  &
+                    , NNodes           = 1                 &
+                    , Orientation      = .TRUE.            &
+                    , TranslationDisp  = .TRUE.            &
+                    , TranslationVel   = .TRUE.            &
+                    , TranslationAcc   = .TRUE.            &
+                    , RotationVel      = .TRUE.            &
+                    , RotationAcc      = .TRUE.            &
+                    , ErrStat          = ErrStat           &
+                    , ErrMess          = ErrMsg            )
+
+    call MeshPositionNode(RotateMesh,                         &
+                          1,                                  &
+                          mesh1_O%Position(:,ConnectionNode), &
+                          ErrStat=ErrStat,                    &
+                          ErrMess=ErrMsg,                     &
+                          Orient=mesh1_O%RefOrientation(:,:,ConnectionNode) )
+    if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+    call MeshConstructElement ( RotateMesh, ELEMENT_POINT, ErrStat, ErrMsg, 1 ); if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+    call MeshCommit ( RotateMesh, ErrStat, ErrMsg ); if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+
+    Angle = 15.0 * D2R
+
+    !note this "looks" like the transpose, but isn't
+    RotateMesh%Orientation(:,1,1) = (/  COS(Angle) , -1.*SIN(Angle), 0.0_ReKi /)
+    RotateMesh%Orientation(:,2,1) = (/  SIN(Angle),      COS(Angle), 0.0_ReKi /)
+    RotateMesh%Orientation(:,3,1) = (/  0.0,         0.0,            1.0 /)
+    RotateMesh%TranslationDisp(:,1) = (/ 1.00, 1.50,  0.00 /)
+    RotateMesh%TranslationVel( :,1) = (/   Pi,   Pi,  0.00_ReKi /) * 0.0
+    RotateMesh%RotationVel(    :,1) = (/ 0.00, 0.00,  0.5 /)
        
-      CALL MeshMapCreate( RotateMesh, Mesh1_O, rotateMesh_map, ErrStat, ErrMsg) ; IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
-      CALL Transfer_Point_to_Line2( RotateMesh, Mesh1_O, rotateMesh_map, ErrStat, ErrMsg); IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
+    call MeshMapCreate( RotateMesh, Mesh1_O, rotateMesh_map, ErrStat, ErrMsg) ; if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+    call Transfer_Point_to_Line2( RotateMesh, Mesh1_O, rotateMesh_map, ErrStat, ErrMsg); if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
       
-      call MeshDestroy(rotateMesh,ErrStat,ErrMsg)
-      call MeshMapDestroy( rotateMesh_map,ErrStat,ErrMsg)
+    call MeshDestroy(rotateMesh,ErrStat,ErrMsg)
+    call MeshMapDestroy( rotateMesh_map,ErrStat,ErrMsg)
                                        
-      !.........................
-      ! Mesh2 (Output: Loads)
-      !.........................
-                 
-      SELECT CASE (ThisCase)
-      CASE ('B')
-         NumHorizNodes  = 9  
-         ConnectionNode = 5
-         NumVertNodes   = 8
-      CASE ('A','C')
-         NumHorizNodes  =  5
-         ConnectionNode =  3
-         NumVertNodes   =  2
-      CASE ('D')
-         NumHorizNodes  =  3
-         ConnectionNode =  2
-         NumVertNodes   =  2
-      END SELECT
-      
-      
-      dx = Len_Horiz/(NumHorizNodes-1) !1/2
-      dz = Len_Vert/(NumVertNodes) !1/4
-      
-      Nnodes = NumHorizNodes + NumVertNodes !17 
-               
-      CALL MeshCreate(  BlankMesh       = mesh2_O           &
-                        , IOS           = COMPONENT_OUTPUT  &
-                        , NNodes        = NNodes            &
-                        , Force         = .TRUE.            &
-                        , Moment        = .TRUE.            &
-                        , ErrStat       = ErrStat           &
-                        , ErrMess       = ErrMsg            )   
-            IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))
-            
-      CALL PositionNodesElements(mesh2_O, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)                 
-      if (ErrStat >= AbortErrLev) CALL ProgAbort("Error creating Mesh2 output for test 2.")
-                                           
-            
-      !..............
-      ! initialize Mesh2 output fields:
-      !..............
-      
-      Mesh2_O%Force    = 0.0
-      Mesh2_O%Moment   = 0.0
-      
-      Mesh2_O%Force(3, 1: NumHorizNodes) = 1.         
-      Mesh2_O%Force(1, ConnectionNode)   = 0.5
-      do j=NumHorizNodes+1,Mesh2_O%NNodes
-         Mesh2_O%Force(1, j) = (0.5*Mesh2_O%Position(3,j))**5 + Mesh2_O%Force(1, ConnectionNode)
-      end do
-                       
-      
-      
-      return
-   end subroutine CreateOutputMeshes_Test2   
-   !-------------------------------------------------------------------------------------------------
-   subroutine PositionNodesElements(ThisMesh, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)
-   ! this positions nodes, creates elements, and committs the mesh for Test2
-   
-      TYPE(MeshType), INTENT(INOUT) :: ThisMesh
-      real(reki),     INTENT(IN)    :: dx, dz
-      integer,        INTENT(IN)    :: NumHorizNodes, ConnectionNode
-      INTEGER(IntKi), INTENT(OUT)   :: ErrStat      
-      character(*),   INTENT(OUT)   :: ErrMsg      
-      
-      integer :: j
-      
-            ! create a "T"
-            
-      ! position nodes:
-            
-            
-      ! horizontal line:            
-      DO j=1,NumHorizNodes 
-         position = (/dx*(j-ConnectionNode), 0.0_ReKi, 0.0_ReKi  /)
-         CALL MeshPositionNode ( ThisMesh, j, position, ErrStat, ErrMsg )     
-         IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))             
-      END DO   
-      
-      
-      ! vertical line:
-      DO j=(NumHorizNodes+1),ThisMesh%Nnodes
-         position = (/0.0_ReKi, 0.0_ReKi, dz*(j-NumHorizNodes)  /)
-         CALL MeshPositionNode ( ThisMesh, j, position, ErrStat, ErrMsg )     
-         IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))             
-      END DO                  
-   
-         ! construct elements:
+    ! Mesh2 (Output: Loads)
+    SELECT CASE (ThisCase)
+    CASE ('B')
+        NumHorizNodes  = 9  
+        ConnectionNode = 5
+        NumVertNodes   = 8
+    CASE ('A','C')
+        NumHorizNodes  =  5
+        ConnectionNode =  3
+        NumVertNodes   =  2
+    CASE ('D')
+        NumHorizNodes  =  3
+        ConnectionNode =  2
+        NumVertNodes   =  2
+    END SELECT
 
-        
-      ! horizontal line:
-      do j=2,NumHorizNodes
-         CALL MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=j-1, P2=J )
-         IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))            
-      END DO
-         
-      ! vertical line:
-      CALL MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=ConnectionNode, P2=NumHorizNodes+1 )
-      IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))            
-         
-      DO j=(NumHorizNodes+2),ThisMesh%Nnodes      
-         CALL MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=j-1, P2=j )
-         IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg))            
-      END DO
-                                    
-         ! that's our entire mesh:
-      CALL MeshCommit ( ThisMesh, ErrStat, ErrMsg )   
-      IF (ErrStat /= ErrID_None) CALL WrScr(TRIM(ErrMsg)) 
-      if (ErrStat >= AbortErrLev) CALL ProgAbort("")        
-               
-   end subroutine PositionNodesElements   
-   !-------------------------------------------------------------------------------------------------
-   subroutine CreateOutputMeshes_Test5
+    dx = Len_Horiz/(NumHorizNodes-1)
+    dz = Len_Vert/(NumVertNodes)
+      
+    Nnodes = NumHorizNodes + NumVertNodes
+
+    call MeshCreate(  BlankMesh     = mesh2_O           &
+                    , IOS           = COMPONENT_OUTPUT  &
+                    , NNodes        = NNodes            &
+                    , Force         = .TRUE.            &
+                    , Moment        = .TRUE.            &
+                    , ErrStat       = ErrStat           &
+                    , ErrMess       = ErrMsg            )   
+    if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+            
+    call PositionNodesElements(mesh2_O, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)                 
+    if (ErrStat >= AbortErrLev) call ProgAbort("Error creating Mesh2 output for test 2.")
+
+    ! initialize Mesh2 output fields:
+    Mesh2_O%Force    = 0.0
+    Mesh2_O%Moment   = 0.0
+      
+    Mesh2_O%Force(3, 1: NumHorizNodes) = 1.         
+    Mesh2_O%Force(1, ConnectionNode)   = 0.5
+    do j=NumHorizNodes+1,Mesh2_O%NNodes
+        Mesh2_O%Force(1, j) = (0.5*Mesh2_O%Position(3,j))**5 + Mesh2_O%Force(1, ConnectionNode)
+    end do
+
+    return
+end subroutine CreateOutputMeshes_Test2   
+
+subroutine PositionNodesElements(ThisMesh, NumHorizNodes, ConnectionNode, dx,dz,ErrStat,ErrMsg)
+   ! this positions nodes, creates elements, and commits the mesh for Test2
+    type(MeshType), INTENT(INOUT) :: ThisMesh
+    real(reki),     INTENT(IN)    :: dx, dz
+    integer,        INTENT(IN)    :: NumHorizNodes, ConnectionNode
+    integer(IntKi), INTENT(OUT)   :: ErrStat
+    character(*),   INTENT(OUT)   :: ErrMsg
+    integer :: j
+      
+    ! create a "T"
+            
+    ! position nodes:
+
+    ! horizontal line:            
+    do j=1,NumHorizNodes 
+        position = (/dx*(j-ConnectionNode), 0.0_ReKi, 0.0_ReKi  /)
+        call MeshPositionNode ( ThisMesh, j, position, ErrStat, ErrMsg )     
+        if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))             
+    end do   
+
+    ! vertical line:
+    do j=(NumHorizNodes+1),ThisMesh%Nnodes
+        position = (/0.0_ReKi, 0.0_ReKi, dz*(j-NumHorizNodes)  /)
+        call MeshPositionNode ( ThisMesh, j, position, ErrStat, ErrMsg )     
+        if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))             
+    end do                  
+   
+    ! construct elements:
+
+    ! horizontal line:
+    do j=2,NumHorizNodes
+        call MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=j-1, P2=J )
+        if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))            
+    end do
+
+    ! vertical line:
+    call MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=ConnectionNode, P2=NumHorizNodes+1 )
+    if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))            
+
+    do j=(NumHorizNodes+2),ThisMesh%Nnodes
+        call MeshConstructElement ( ThisMesh, ELEMENT_LINE2, ErrStat, ErrMsg, P1=j-1, P2=j )
+        if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+    end do
+
+    call MeshCommit ( ThisMesh, ErrStat, ErrMsg )
+    if (ErrStat /= ErrID_None) call WrScr(TRIM(ErrMsg))
+    if (ErrStat >= AbortErrLev) call ProgAbort("")
+end subroutine PositionNodesElements   
+!-------------------------------------------------------------------------------------------------
+subroutine CreateOutputMeshes_Test5
    
       real(reki) :: z
       

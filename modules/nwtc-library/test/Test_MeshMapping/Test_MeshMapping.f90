@@ -25,7 +25,7 @@ subroutine Test_TestMeshMapping()
    call random_seed(SIZE=n1)
    CALL RANDOM_SEED (PUT = SEED (1 : n1))
 
-   DO TestNumber=1,1
+   DO TestNumber=2,2
 
       debug_print = .false.
 
@@ -56,7 +56,7 @@ subroutine Test_TestMeshMapping()
       CASE(1) ! 1 point to 5 points
          CALL CreateOutputMeshes_Test1()
       CASE(2) ! 'T' with resolution gain
-         CALL CreateOutputMeshes_Test2('A') ! was 'A'
+         CALL CreateOutputMeshes_Test2('A')
       CASE(3) ! 'T' with loss of resolution
          CALL CreateOutputMeshes_Test2('B')
       CASE(4) ! 'T' with equal nodes
