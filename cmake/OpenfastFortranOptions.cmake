@@ -134,9 +134,9 @@ macro(set_fast_intel_fortran_posix)
 
   # intel profiling flags
   # phases: vec, par, openmp
-  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-phase=vec -qopt-report=5")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-phase=vec,openmp -qopt-report=5")
   set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -debug all")
-  # set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-routine=HydroDyn_Init")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -qopt-report-routine=Morison_CalcOutput") # Create_Augmented_Ln2_Src_Mesh, Morison_CalcOutput
 
   # Intel processor feature sets
   set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELWITHDEBINFO} -xHOST")   # Use feature set for CPU used to compile
