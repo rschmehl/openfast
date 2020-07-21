@@ -21,3 +21,4 @@ Details on the transition from FAST v8 to OpenFAST may be found in :numref:`fast
    beamdyn/index.rst
    elastodyn/index.rst
    hydrodyn/index.rst
+   turbsim/index.rst
