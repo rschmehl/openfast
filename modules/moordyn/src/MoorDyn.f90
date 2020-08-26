@@ -102,17 +102,24 @@ CONTAINS
 
       p%RootName = TRIM(InitInp%RootName)//'.MD'  ! all files written from this module will have this root name
 
+      IF ( InitInp%UseInputFile ) THEN
+         ! call function that reads input file and creates cross-referenced Connect and Line objects
+         CALL MDIO_ReadInput(InitInp, p, m, ErrStat2, ErrMsg2)
+            CALL CheckError( ErrStat2, ErrMsg2 )
+            IF (ErrStat >= AbortErrLev) RETURN
 
-      ! call function that reads input file and creates cross-referenced Connect and Line objects
-      CALL MDIO_ReadInput(InitInp, p, m, ErrStat2, ErrMsg2)
-         CALL CheckError( ErrStat2, ErrMsg2 )
-         IF (ErrStat >= AbortErrLev) RETURN
+         ! process the OutList array and set up the index arrays for the requested output quantities
+         CALL MDIO_ProcessOutList(InitInp%OutList, p, m, y, InitOut, ErrStat2, ErrMsg2 )
+            CALL CheckError( ErrStat2, ErrMsg2 )
+            IF (ErrStat >= AbortErrLev) RETURN
 
-      ! process the OutList array and set up the index arrays for the requested output quantities
-      CALL MDIO_ProcessOutList(InitInp%OutList, p, m, y, InitOut, ErrStat2, ErrMsg2 )
-         CALL CheckError( ErrStat2, ErrMsg2 )
-         IF (ErrStat >= AbortErrLev) RETURN
+      ELSE
 
+         ! populate m and p
+
+      ENDIF
+      
+      ! TODO: Verify that the input data given is valid
 
       !-------------------------------------------------------------------------------------------------
       !          Connect mooring system together and make necessary allocations

@@ -27,6 +27,7 @@ typedef   ^           ^                ReKi               TMaxIC         -    12
 typedef   ^           ^                ReKi               CdScaleIC      -    1     -   "factor to scale drag coefficients by during dynamic relaxation"              "[]"
 typedef   ^           ^                ReKi               threshIC       -    0.01  -   "convergence tolerance for ICs  (0.01 means 1%)"              "[]"
 typedef   ^           ^                CHARACTER(ChanLen)      OutList        {:}   ""   -   "string containing list of output channels requested in input file"
+typedef   ^           ^                LOGICAL            UseInputFile   -    .TRUE. -  "TRUE to parse inputs from a file; FALSE to get inputs in memory." -
 
 
 # ====================================== Internal data types ========================================================================

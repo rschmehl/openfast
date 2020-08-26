@@ -81,20 +81,13 @@ MODULE MoorDyn_IO
 
   ! ---------------------------------------------------------------------------------------------------------
 
-
-
-
    PUBLIC :: MDIO_ReadInput
    PUBLIC :: MDIO_OpenOutput
    PUBLIC :: MDIO_CloseOutput
    PUBLIC :: MDIO_ProcessOutList
    PUBLIC :: MDIO_WriteOutputs
 
-
 CONTAINS
-
-
-
 
    !====================================================================================================
    SUBROUTINE MDIO_ReadInput( InitInp, p, m, ErrStat, ErrMsg )
@@ -614,30 +607,29 @@ CONTAINS
    ! ====================================================================================================
 
 
+   ! ====================================================================================================
+   SUBROUTINE MDIO_ProcessOutList(OutList, p, m, y, InitOut, ErrStat, ErrMsg )
 
-  ! ====================================================================================================
-  SUBROUTINE MDIO_ProcessOutList(OutList, p, m, y, InitOut, ErrStat, ErrMsg )
-
-  ! This routine processes the output channels requested by OutList, checking for validity and setting
-  ! the p%OutParam structures (of type MD_OutParmType) for each valid output.
-  ! It assumes the value p%NumOuts has been set beforehand, and sets the values of p%OutParam.
+      ! This routine processes the output channels requested by OutList, checking for validity and setting
+      ! the p%OutParam structures (of type MD_OutParmType) for each valid output.
+      ! It assumes the value p%NumOuts has been set beforehand, and sets the values of p%OutParam.
 
 
-    IMPLICIT                        NONE
+      IMPLICIT                        NONE
 
-    ! Passed variables
-    CHARACTER(ChanLen),        INTENT(IN)     :: OutList(:)                  ! The list of user-requested outputs
-    TYPE(MD_ParameterType),    INTENT(INOUT)  :: p                           ! The module parameters
-    TYPE(MD_MiscVarType),      INTENT(INOUT)  :: m
-    TYPE(MD_OutputType),       INTENT(INOUT)  :: y                           ! Initial system outputs (outputs are not calculated; only the output mesh is initialized)
-    TYPE(MD_InitOutputType),   INTENT(INOUT)  :: InitOut                     ! Output for initialization routine
-    INTEGER(IntKi),            INTENT(OUT)    :: ErrStat                     ! The error status code
-    CHARACTER(*),              INTENT(OUT)    :: ErrMsg                      ! The error message, if an error occurred
+      ! Passed variables
+      CHARACTER(ChanLen),        INTENT(IN)     :: OutList(:)                  ! The list of user-requested outputs
+      TYPE(MD_ParameterType),    INTENT(INOUT)  :: p                           ! The module parameters
+      TYPE(MD_MiscVarType),      INTENT(INOUT)  :: m
+      TYPE(MD_OutputType),       INTENT(INOUT)  :: y                           ! Initial system outputs (outputs are not calculated; only the output mesh is initialized)
+      TYPE(MD_InitOutputType),   INTENT(INOUT)  :: InitOut                     ! Output for initialization routine
+      INTEGER(IntKi),            INTENT(OUT)    :: ErrStat                     ! The error status code
+      CHARACTER(*),              INTENT(OUT)    :: ErrMsg                      ! The error message, if an error occurred
 
-    ! Local variables
-    INTEGER                      :: I                                        ! Generic loop-counting index
-!    INTEGER                      :: J                                        ! Generic loop-counting index
-!    INTEGER                      :: INDX                                     ! Index for valid arrays
+      ! Local variables
+      INTEGER                      :: I                                        ! Generic loop-counting index
+      ! INTEGER                      :: J                                        ! Generic loop-counting index
+      ! INTEGER                      :: INDX                                     ! Index for valid arrays
 
     CHARACTER(ChanLen)           :: OutListTmp                               ! A string to temporarily hold OutList(I), the name of each output channel
     CHARACTER(ChanLen)           :: qVal                                     ! quantity type string to match to list of valid options
@@ -825,23 +817,23 @@ CONTAINS
      END DO  ! I ... looping through OutList
 
 
-!!   ! Allocate MDWrOutput which is used to store a time step's worth of output channels, prior to writing to a file.
-!    ALLOCATE( MDWrOutput( p%NumOuts),  STAT = ErrStat )
-!    IF ( ErrStat /= ErrID_None ) THEN
-!      ErrMsg  = ' Error allocating space for MDWrOutput array.'
-!      ErrStat = ErrID_Fatal
-!      RETURN
-!    END IF
+      ! !   ! Allocate MDWrOutput which is used to store a time step's worth of output channels, prior to writing to a file.
+      !    ALLOCATE( MDWrOutput( p%NumOuts),  STAT = ErrStat )
+      !    IF ( ErrStat /= ErrID_None ) THEN
+      !    ErrMsg  = ' Error allocating space for MDWrOutput array.'
+      !    ErrStat = ErrID_Fatal
+      !    RETURN
+      !    END IF
 
 
-      ! Allocate MDWrOuput2 which is used to store a time step's worth of output data for each line, just making it really big for now <<<<<<<<<<<<<<
-      ! <<<<<<<<<<< should do this for each line instead.
-   !   ALLOCATE( LineWriteOutputs( 200),  STAT = ErrStat )
-   !   IF ( ErrStat /= ErrID_None ) THEN
-   !      ErrMsg  = ' Error allocating space for LineWriteOutputs array.'
-   !      ErrStat = ErrID_Fatal
-   !      RETURN
-   !   END IF
+         ! Allocate MDWrOuput2 which is used to store a time step's worth of output data for each line, just making it really big for now <<<<<<<<<<<<<<
+         ! <<<<<<<<<<< should do this for each line instead.
+      !   ALLOCATE( LineWriteOutputs( 200),  STAT = ErrStat )
+      !   IF ( ErrStat /= ErrID_None ) THEN
+      !      ErrMsg  = ' Error allocating space for LineWriteOutputs array.'
+      !      ErrStat = ErrID_Fatal
+      !      RETURN
+      !   END IF
 
       !Allocate WriteOuput
       ALLOCATE(        y%WriteOutput(  p%NumOuts), &
@@ -876,7 +868,7 @@ CONTAINS
       END DO
 
 
-   CONTAINS
+      CONTAINS
 
       SUBROUTINE DenoteInvalidOutput( OutParm )
          TYPE(MD_OutParmType), INTENT (INOUT)  :: OutParm
@@ -891,12 +883,8 @@ CONTAINS
    !====================================================================================================
 
 
-
-
-
    !====================================================================================================
    SUBROUTINE MDIO_OpenOutput( OutRootName,  p, m, InitOut, ErrStat, ErrMsg )
-   !----------------------------------------------------------------------------------------------------
 
       CHARACTER(*),                  INTENT( IN    ) :: OutRootName          ! Root name for the output file
       TYPE(MD_ParameterType),        INTENT( INOUT ) :: p
@@ -908,7 +896,6 @@ CONTAINS
       INTEGER                                        :: I                    ! Generic loop counter
       INTEGER                                        :: J                    ! Generic loop counter
       CHARACTER(1024)                                :: OutFileName          ! The name of the output file  including the full path.
-!      INTEGER                                        :: L                           ! counter for index in LineWrOutput
       INTEGER                                        :: LineNumOuts                 ! number of entries in LineWrOutput for each line
       CHARACTER(200)                                 :: Frmt                 ! a string to hold a format statement
       INTEGER                                        :: ErrStat2
@@ -944,10 +931,6 @@ CONTAINS
          WRITE(p%MDUnOut,Frmt, IOSTAT=ErrStat2)  TRIM( 'Time' ), ( p%Delim, TRIM( p%OutParam(I)%Name), I=1,p%NumOuts )
 
          WRITE(p%MDUnOut,Frmt)  TRIM( '(s)' ), ( p%Delim, TRIM( p%OutParam(I)%Units ), I=1,p%NumOuts )
-
- !     ELSE  ! if no outputs requested
-
- !        call wrscr('note, MDIO_OpenOutput thinks that no outputs have been requested.')
 
       END IF
 
